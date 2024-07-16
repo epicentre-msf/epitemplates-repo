@@ -1,7 +1,9 @@
 # History files
 .Rhistory
 .Rapp.history
-.DS_Store
+
+# configuration repo
+*.DS_Store
 .vscode
 
 # Session Data files
@@ -33,3 +35,13 @@ vignettes/*.pdf
 *.html
 *.xlsx
 *.csv
+
+#usual local repositories (ignored folders)
+temp
+data
+local
+renv
+
+# environment variables, profiles
+.Renviron
+.Rprofile
