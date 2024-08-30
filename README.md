@@ -26,7 +26,7 @@ available to all your R projects. On the other hand project level
 - Restart your R session so that the updated `.Renviron` is loaded
 - The [`set_paths()`](R/setpaths.R) function allows you to quickly access
  your sharepoint path as well as all of the synced sub-folders in the sharepoint folder. 
-*This function requires to have {janitor} and {fs} packages installed*
+*This function requires to have {janitor}, {stringr} and {fs} packages installed.*
 
 ## Ignored folders
 
