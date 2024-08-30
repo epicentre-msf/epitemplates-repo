@@ -37,10 +37,13 @@ vignettes/*.pdf
 *.csv
 
 #usual local repositories (ignored folders)
-temp
-data
-local
-renv
+temp/
+data/
+local/
+
+# Renv
+renv/
+renv.lock
 
 # environment variables, profiles
 .Renviron
