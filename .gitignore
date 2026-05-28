@@ -45,3 +45,4 @@ renv
 # environment variables, profiles
 .Renviron
 .Rprofile
+.r-agent/

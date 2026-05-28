@@ -1,37 +1,56 @@
-#' Set the paths to onedrive sharepoint
-#' 
-#' Use an environment variable SHAREPOINT_PATH to set the path to
-#' your local onedrive sharepoint. Please set it in your home .Renviron
-#' file.
-#' 
-#' @return A list of all folders in the sharepoint path.
-set_paths <- function() { 
-  
-  if(Sys.getenv("SHAREPOINT_PATH") == "") {
-    
-    stop("ERROR : the SHAREPOINT_PATH variable does not exist in .Renviron - please make sure it is created (see ?usethis::edit_r_environ() )")
-    
+#' Build a list of paths to your local OneDrive SharePoint folders
+#'
+#' Reads the `SHAREPOINT_PATH` environment variable (set in `.Renviron`,
+#' either at the project level or in your `HOME` directory) and returns
+#' a named list whose first element is the SharePoint root and whose
+#' remaining elements are the top-level subfolders inside it.
+#'
+#' @details
+#' Subfolder names are cleaned with [janitor::make_clean_names()] so they
+#' can be used as syntactically valid, snake_case R names (for example
+#' `paths$my_project_2024`). The on-disk folder casing is preserved in
+#' the path *values* — only the *names* of the list elements are cleaned.
+#'
+#' The function fails fast with an informative message when:
+#' - `SHAREPOINT_PATH` is unset or empty in `.Renviron`, or
+#' - `SHAREPOINT_PATH` points to a directory that does not exist on disk.
+#'
+#' @return A named list. The first element, `sharepoint_path`, is the
+#'   SharePoint root as a single character string. Each remaining element
+#'   is the full path to one immediate subdirectory of the root, named
+#'   after a snake_case version of the folder name.
+#'
+#' @examples
+#' \dontrun{
+#' paths <- set_paths()
+#' paths$sharepoint_path
+#' paths$my_project
+#' }
+set_paths <- function() {
+  sharepoint_path <- Sys.getenv("SHAREPOINT_PATH", unset = NA_character_)
+
+  if (is.na(sharepoint_path) || !nzchar(sharepoint_path)) {
+    cli::cli_abort(c(
+      "{.envvar SHAREPOINT_PATH} is not set in your {.file .Renviron}.",
+      "i" = "Open it with {.run usethis::edit_r_environ()}, add \\
+             {.code SHAREPOINT_PATH=\"/path/to/sharepoint\"}, then \\
+             restart R so the change is picked up."
+    ))
   }
-  #get onedrive path from .Renviron
-  sharepoint_path <- Sys.getenv("SHAREPOINT_PATH")
-  
-  names(sharepoint_path) <- "sharepoint_path"
-  
-  #list all sync projects in onedrive and name the item of list
-  proj <- c(fs::dir_ls(sharepoint_path))
-  
-  names(proj) <- janitor::make_clean_names(stringr::str_remove(names(proj), "(.*/)" ))
-  
-  proj_ls <- as.list(proj)
-  
-  #create the object to be returned
-  paths <- append(
-    
-    sharepoint_path, 
-    
-    proj_ls
-    
-    )
-  
-  return(paths)
+
+  if (!fs::dir_exists(sharepoint_path)) {
+    cli::cli_abort(c(
+      "{.envvar SHAREPOINT_PATH} points to a directory that does \\
+       not exist.",
+      "x" = "Path: {.path {sharepoint_path}}"
+    ))
+  }
+
+  subfolders <- fs::dir_ls(sharepoint_path, type = "directory")
+  names(subfolders) <- janitor::make_clean_names(fs::path_file(subfolders))
+
+  c(
+    list(sharepoint_path = sharepoint_path),
+    as.list(subfolders)
+  )
 }
